@@ -1,0 +1,6 @@
+
+
+namespace RandomCustomerColors.Preferences
+{
+
+}
