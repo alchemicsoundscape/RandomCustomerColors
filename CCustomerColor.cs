@@ -1,7 +1,7 @@
 ﻿using KitchenMods; 
 using Unity.Entities; 
 
-namespace KitchenRandomCustomerColor.Components
+namespace RandomCustomerColors.Components
 {
     public struct CCustomerColor : IComponentData, IModComponent 
     {
