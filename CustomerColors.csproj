@@ -36,9 +36,6 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="0Harmony">
-      <HintPath>..\..\..\..\SteamLibrary\steamapps\workshop\content\1599600\2898033283\0Harmony.dll</HintPath>
-    </Reference>
     <Reference Include="Kitchen.Common">
       <HintPath>..\..\..\..\SteamLibrary\steamapps\common\PlateUp\PlateUp\PlateUp_Data\Managed\Kitchen.Common.dll</HintPath>
     </Reference>
@@ -69,14 +66,11 @@
     <Reference Include="Unity.Entities">
       <HintPath>..\..\..\..\SteamLibrary\steamapps\common\PlateUp\PlateUp\PlateUp_Data\Managed\Unity.Entities.dll</HintPath>
     </Reference>
-    <Reference Include="Unity.TextMeshPro">
-      <HintPath>..\..\..\..\SteamLibrary\steamapps\common\PlateUp\PlateUp\PlateUp_Data\Managed\Unity.TextMeshPro.dll</HintPath>
-    </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>..\..\..\..\SteamLibrary\steamapps\common\PlateUp\PlateUp\PlateUp_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.UI">
-      <HintPath>..\..\..\..\SteamLibrary\steamapps\common\PlateUp\PlateUp\PlateUp_Data\Managed\UnityEngine.UI.dll</HintPath>
+    <Reference Include="UnityEngine">
+      <HintPath>..\..\..\..\SteamLibrary\steamapps\common\PlateUp\PlateUp\PlateUp_Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

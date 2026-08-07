@@ -15,11 +15,11 @@ namespace RandomCustomerColors
 
         public const string MOD_NAME = "Random Customer Colors";
 
-        public const string MOD_VERSION = "1.0.0";
+        public const string MOD_VERSION = "2.0.0";
 
         public const string MOD_AUTHOR = "freshpepperino";
 
-        public const string MOD_GAMEVERSION = ">=1.2.0"; 
+        public const string MOD_GAMEVERSION = ">=1.5.1"; 
 
         public Mod()
             : base(MOD_GUID, MOD_NAME, MOD_AUTHOR, MOD_VERSION, MOD_GAMEVERSION, Assembly.GetExecutingAssembly()) { }
