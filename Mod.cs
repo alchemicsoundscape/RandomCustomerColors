@@ -15,7 +15,7 @@ namespace RandomCustomerColors
 
         public const string MOD_NAME = "Random Customer Colors";
 
-        public const string MOD_VERSION = "2.0.0";
+        public const string MOD_VERSION = "2.0.1";
 
         public const string MOD_AUTHOR = "freshpepperino";
 

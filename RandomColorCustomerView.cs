@@ -38,114 +38,125 @@ namespace RandomCustomerColors.Views
                 {
                     Mod.LogError(e.Message);
                 }
+
+                RequireForUpdate(_newCustomerQuery);
             }
 
             protected override void OnUpdate()
             {
-                if (_newCustomerQuery.IsEmpty)
-                    return;
-                  
-                var currenRandomizedCustomers = GetEntityQuery(new QueryHelper().All(typeof(CCustomerColor)));
-                NativeArray<CLinkedView> linkedViews = _newCustomerQuery.ToComponentDataArray<CLinkedView>(Allocator.Temp);
-                NativeArray<Entity> customers = _newCustomerQuery.ToEntityArray(Allocator.Temp);
-                NativeArray<CRequiresView> customerType = _newCustomerQuery.ToComponentDataArray<CRequiresView>(Allocator.Temp);
-                NativeArray<CBelongsToGroup> group = _newCustomerQuery.ToComponentDataArray<CBelongsToGroup>(Allocator.Temp);
-                 
-                for (int i = 0; i < linkedViews.Length; i++)
-                {  
-                    if(!((customerType[i].Type.Equals(ViewType.Customer) && CustomerColorPreferences.CustomerPreference.Get()) || (customerType[i].Type.Equals(ViewType.CustomerCat) && CustomerColorPreferences.CatPreference.Get())))
-                    {
-                        linkedViews.Dispose();
-                        customers.Dispose();
-                        customerType.Dispose();
-                        group.Dispose();
-                         
-                        EntityManager.AddComponent<CCustomerColor>(customers[i]); 
-                        return;
-                    }
-                      
-                    if (CustomerColorPreferences.RandomByGroupPreference.Get())
-                    {  
-                       foreach(var member in customers)
-                        { 
-                            EntityManager.AddComponent(member, typeof(CCustomerColor)); 
-                        }  
-                    }
-                    else
-                    {
-                        Color c = UnityEngine.Random.ColorHSV(0f, 1f, 0f, 1f, 0.5f, 1f, 1f, 1f); 
-                        SendUpdate(linkedViews[i], new CustomerColorViewData
-                        {
-                            r = c.r,
-                            g = c.g,
-                            b = c.b
-                        }, MessageType.SpecificViewUpdate); 
-                        EntityManager.AddComponent<CCustomerColor>(customers[i]);
-
-                        linkedViews.Dispose();
-                        customers.Dispose();
-                        customerType.Dispose();
-                        group.Dispose(); 
-                        return;
-                    } 
-                }
-                 
-                NativeArray<CCustomerColor> customerColors = _colorizedCustomersQuery.ToComponentDataArray<CCustomerColor>(Allocator.Temp); 
-
-                NativeArray<Entity> customerColorsEntity = _colorizedCustomersQuery.ToEntityArray(Allocator.Temp); 
-
-                NativeArray<CLinkedView> customerColorLinkedViews = _colorizedCustomersQuery.ToComponentDataArray<CLinkedView>(Allocator.Temp); 
-
-                List<ColorCoordinator> groupedCustomers = new List<ColorCoordinator>();
-                 
-                for (int i = 0; i < customerColorsEntity.Length; i++)
+                try
                 {
-                    var ctx = new EntityContext(EntityManager);
-                    var groupId = ctx.Get<CBelongsToGroup>(customerColorsEntity[i]).Group.Index; 
+                    if (_newCustomerQuery.IsEmpty)
+                        return;
 
-                    if (groupedCustomers.Any(gc => gc.groupId.Equals(groupId)))
-                    { 
-                        var thisGc = groupedCustomers.First(gc => gc.groupId.Equals(groupId)); 
-                        var colorCoord = new ColorCoordinator()
-                        {
-                            entity = customerColorsEntity[i],
-                            groupId = groupId,
-                            color = thisGc.color
-                        }; 
-                        groupedCustomers.Add(colorCoord); 
-                    }
-                    else
-                    { 
-                        groupedCustomers.Add(new ColorCoordinator()
-                        {
-                            entity = customerColorsEntity[i],
-                            groupId = groupId,
-                            color = UnityEngine.Random.ColorHSV(0f, 1f, 0f, 1f, 0.5f, 1f, 1f, 1f)
-                        });
-                    }
-                } 
+                    NativeArray<CLinkedView> linkedViews = _newCustomerQuery.ToComponentDataArray<CLinkedView>(Allocator.Temp);
+                    NativeArray<Entity> customers = _newCustomerQuery.ToEntityArray(Allocator.Temp);
+                    NativeArray<CRequiresView> customerType = _newCustomerQuery.ToComponentDataArray<CRequiresView>(Allocator.Temp);
+                    NativeArray<CBelongsToGroup> group = _newCustomerQuery.ToComponentDataArray<CBelongsToGroup>(Allocator.Temp);
 
-                foreach(var customerGroup in groupedCustomers)
-                { 
-                    var comp = GetComponent<CCustomerColor>(customerGroup.entity); 
-                    if (!comp.hasChangedColor)
+                    for (int i = 0; i < linkedViews.Length; i++)
                     {
-                        Mod.LogInfo("Changing entity color - " + customerGroup.ToString());
-                        SendUpdate(customerColorLinkedViews[groupedCustomers.IndexOf(customerGroup)], new CustomerColorViewData()
-                        {
-                            r = customerGroup.color.r,
-                            g = customerGroup.color.g,
-                            b = customerGroup.color.b,
-                        }, MessageType.SpecificViewUpdate);
-                        comp.hasChangedColor = true;
-                        Set(customerGroup.entity, comp);
-                        Mod.LogInfo("Done Changing entity color - " + customerGroup.ToString());
+                        Entity thisCustomer = customers[i];
 
+                        if (!((customerType[i].Type.Equals(ViewType.Customer) && CustomerColorPreferences.CustomerPreference.Get()) ||
+                              (customerType[i].Type.Equals(ViewType.CustomerCat) && CustomerColorPreferences.CatPreference.Get())))
+                        {
+                            Mod.LogInfo($"Preference disabled for customer type {customerType[i].Type}, skipping");
+                            EntityManager.AddComponent<CCustomerColor>(thisCustomer);
+
+                            linkedViews.Dispose();
+                            customers.Dispose();
+                            customerType.Dispose();
+                            group.Dispose();     
+                            return;
+                        }
+
+                        if (CustomerColorPreferences.RandomByGroupPreference.Get())
+                        {
+                            foreach (var member in customers)
+                            {
+                                EntityManager.AddComponent(member, typeof(CCustomerColor));
+                            }
+                        }
+                        else
+                        {
+                            Color c = UnityEngine.Random.ColorHSV(0f, 1f, 0f, 1f, 0.5f, 1f, 1f, 1f);
+                            SendUpdate(linkedViews[i], new CustomerColorViewData
+                            {
+                                r = c.r,
+                                g = c.g,
+                                b = c.b
+                            }, MessageType.SpecificViewUpdate);
+                            EntityManager.AddComponent<CCustomerColor>(thisCustomer);
+
+                            linkedViews.Dispose();
+                            customers.Dispose();
+                            customerType.Dispose();
+                            group.Dispose();
+                            return;
+                        }
                     }
-                } 
-                customerColors.Dispose();
-                customerColorsEntity.Dispose();
-                customerColorLinkedViews.Dispose();
+
+                    NativeArray<CCustomerColor> customerColors = _colorizedCustomersQuery.ToComponentDataArray<CCustomerColor>(Allocator.Temp);
+                    NativeArray<Entity> customerColorsEntity = _colorizedCustomersQuery.ToEntityArray(Allocator.Temp);
+                    NativeArray<CLinkedView> customerColorLinkedViews = _colorizedCustomersQuery.ToComponentDataArray<CLinkedView>(Allocator.Temp);
+
+                    List<ColorCoordinator> groupedCustomers = new List<ColorCoordinator>();
+
+                    for (int i = 0; i < customerColorsEntity.Length; i++)
+                    {
+                        var ctx = new EntityContext(EntityManager);
+                        var groupId = ctx.Get<CBelongsToGroup>(customerColorsEntity[i]).Group.Index;
+
+                        if (groupedCustomers.Any(gc => gc.groupId.Equals(groupId)))
+                        {
+                            var thisGc = groupedCustomers.First(gc => gc.groupId.Equals(groupId));
+                            var colorCoord = new ColorCoordinator()
+                            {
+                                entity = customerColorsEntity[i],
+                                groupId = groupId,
+                                color = thisGc.color
+                            };
+                            groupedCustomers.Add(colorCoord);
+                        }
+                        else
+                        {
+                            groupedCustomers.Add(new ColorCoordinator()
+                            {
+                                entity = customerColorsEntity[i],
+                                groupId = groupId,
+                                color = UnityEngine.Random.ColorHSV(0f, 1f, 0f, 1f, 0.5f, 1f, 1f, 1f)
+                            });
+                        }
+                    }
+
+                    foreach (var customerGroup in groupedCustomers)
+                    {
+                        var comp = GetComponent<CCustomerColor>(customerGroup.entity);
+                        if (!comp.hasChangedColor)
+                        {
+                            Mod.LogInfo("Changing entity color - " + customerGroup.ToString());
+                            SendUpdate(customerColorLinkedViews[groupedCustomers.IndexOf(customerGroup)], new CustomerColorViewData()
+                            {
+                                r = customerGroup.color.r,
+                                g = customerGroup.color.g,
+                                b = customerGroup.color.b,
+                            }, MessageType.SpecificViewUpdate);
+                            comp.hasChangedColor = true;
+                            Set(customerGroup.entity, comp);
+                            Mod.LogInfo("Done Changing entity color - " + customerGroup.ToString());
+
+                        }
+                    }
+                    customerColors.Dispose();
+                    customerColorsEntity.Dispose();
+                    customerColorLinkedViews.Dispose();
+                }
+                catch (Exception e)
+                {
+                    Mod.LogError(e.Message);
+                    Mod.LogError(e.StackTrace);
+                }
             }
         }
 
